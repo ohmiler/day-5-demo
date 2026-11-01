@@ -1,5 +1,5 @@
 import type { Issue, IssueStatus, NewIssueInput } from "@/types/issue";
-import { createSupabaseServerClient } from "./supabase/server";
+import { createClient } from "@/lib/supabase/server";
 
 type DbIssue = {
     id: string;
@@ -24,7 +24,7 @@ function mapIssue(row: DbIssue): Issue {
 }
 
 export async function getIssues(): Promise<Issue[]> {
-    const supabase = createSupabaseServerClient();
+    const supabase = await createClient();
     const { data, error } = await supabase
         .from("issues")
         .select("*")
@@ -36,7 +36,7 @@ export async function getIssues(): Promise<Issue[]> {
 }
 
 export async function getIssueById(id: string): Promise<Issue | null> {
-    const supabase = createSupabaseServerClient();
+    const supabase = await createClient();
     const { data, error } = await supabase
         .from("issues")
         .select("*")
@@ -49,8 +49,9 @@ export async function getIssueById(id: string): Promise<Issue | null> {
 
 export async function createIssue(
     input: NewIssueInput,
+    userId: string,
 ): Promise<void> {
-    const supabase = createSupabaseServerClient();
+    const supabase = await createClient();
 
     const { error } = await supabase.from("issues").insert({
         reporter_name: input.reporterName,
@@ -58,6 +59,7 @@ export async function createIssue(
         title: input.title,
         description: input.description,
         status: "OPEN",
+        created_by: userId
     });
 
     if (error) {
@@ -66,7 +68,7 @@ export async function createIssue(
 }
 
 export async function updateIssueStatus(id: string, status: IssueStatus): Promise<void> {
-  const supabase = createSupabaseServerClient();
+  const supabase = await createClient();
   const { error } = await supabase
     .from("issues")
     .update({ status, updated_at: new Date().toISOString() })

@@ -1,8 +1,9 @@
 import { IssueList } from "@/components/IssueList";
 import { getIssues } from "@/lib/issues";
+import { requireUser } from "@/lib/auth";
 
 export default async function IssuesPage() {
-
+    await requireUser();
     const issues = await getIssues();
 
     return (
